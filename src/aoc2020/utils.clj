@@ -21,11 +21,12 @@
       (slurp)
       (clojure.edn/read-string)))
 
-(defmacro read-file [filename _ option2]
-  `(->> (clojure.java.io/resource ~filename)
-        (slurp)
-        (clojure.string/split-lines)
-        (map #(~option2 %))))
+(defn read-file [filename & {:keys [parse-lines-with]
+                             :or {parse-lines-with identity}}]
+  (->> (clojure.java.io/resource filename)
+       (slurp)
+       (clojure.string/split-lines)
+       (map parse-lines-with)))
 
 (defmacro xor 
   ([] nil)

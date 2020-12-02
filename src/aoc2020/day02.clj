@@ -28,7 +28,7 @@
     (<= min (count-chars c pwd) max)))
 
 (defn solve-with [validator-fn]
-  (->>  (utils/read-file "day02.txt" :line-fn validator-fn)
+  (->>  (utils/read-file "day02.txt" :parse-lines-with validator-fn)
         (filter identity)
         (count)))
 
@@ -52,6 +52,5 @@
   (solve-part-1)
   (solve-part-2)
   )
-
 
 
