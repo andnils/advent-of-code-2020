@@ -1,5 +1,5 @@
 (ns aoc2020.day02
-  (:require [aoc2020.utils :refer [xor] :as utils]))
+  (:require [aoc2020.utils :refer [xor ->int] :as utils]))
 
 
 (def testdata ["1-3 a: abcde"
@@ -7,22 +7,24 @@
                "2-9 c: ccccccccc"])
 
 (defn count-chars
-  "Count number of occurances of char C
-  in string S"
-  [c s]
-  (->> s
+  "Count number of occurances of char c in password"
+  [c password]
+  (->> password
        (filter #(= c %))
        (count)))
 
-(defn parse [policy]
-  (let [[_ MIN MAX CHAR PWD] (re-matches #"(\d+)-(\d+) (\w): (\w+)" policy)]
-    [(Integer/parseInt MIN)
-     (Integer/parseInt MAX)
-     (first CHAR)
-     PWD]))
+(defn parse
+  "Parse a line with policy and password.
+  Returns vector of type [int int char String]"
+  [policy-and-password]
+  (let [[_ x y c pwd] (re-matches #"(\d+)-(\d+) (\w): (\w+)" policy-and-password)]
+    [(->int x)
+     (->int y)
+     (.charAt c 0)      ; convert length-1-string to char
+     pwd]))
 
-(defn valid? [policy]
-  (let [[min max c pwd] (parse policy)]
+(defn valid? [policy-and-password]
+  (let [[min max c pwd] (parse policy-and-password)]
     (<= min (count-chars c pwd) max)))
 
 (defn solve-with [validator-fn]
@@ -35,8 +37,8 @@
   (solve-with valid?))
 
 
-(defn valid-v2? [policy]
-  (let [[p1 p2 c pwd] (parse policy)
+(defn valid-v2? [policy-and-password]
+  (let [[p1 p2 c pwd] (parse policy-and-password)
         c1 (.charAt pwd (dec p1))
         c2 (.charAt pwd (dec p2))]
     (xor (= c c1)
