@@ -14,7 +14,9 @@
 (defn make-reducer-fn [increment skip-line?]
   (fn [state line]
     (if (skip-line? state)
+      ;; if skip, just increment the row-counter
       (update state :row inc)
+      ;; else: check if tree and then increment tree-count
       (let [current (.charAt line (:pos state))
             new-pos (mod (+ (:pos state) increment) (count line))]
         (-> state
@@ -29,9 +31,24 @@
    :count 0})
 
 
-(defn solver
+(defn- move-one-row-at-a-time
+  "This is the default fn for deciding
+  whether to skip a row.
+  Always return false -> don't skip the row."
+  [_]
+  false)
+
+
+(defn- move-two-rows-at-a-time
+  "This function skips every odd-numbered row."
+  [line]
+  (let [line-number (:row line)]
+    (odd? line-number)))
+
+
+(defn move-with-step
   ([step]
-   (solver step (constantly false)))
+   (move-with-step step move-one-row-at-a-time))
   ([step skip-line-fn]
    (:count
     (with-open [rdr (io/reader url)]
@@ -39,17 +56,19 @@
               initial-state
               (line-seq rdr))))))
 
+
 (defn solve-part-1 []
-  (solver 3))
+  (move-with-step 3))
+
 
 (defn solve-part-2 []
-  (* (solver 1)
-     (solver 3)
-     (solver 5)
-     (solver 7)
-     (solver 1 (fn [{:keys [row]}] (odd? row)))))
+  (* (move-with-step 1)
+     (move-with-step 3)
+     (move-with-step 5)
+     (move-with-step 7)
+     (move-with-step 1 move-two-rows-at-a-time)))
 
 (comment
   (solve-part-1)
-  (solve-part-2)  ;; => 3584591857
+  (solve-part-2)
   )
