@@ -11,23 +11,45 @@
   (= c \#))
 
 
-(defn reducer-fn [state line]
-  (let [current (.charAt line (:pos state))
-        new-pos (mod (+ (:pos state) 3) (count line))]
-    (-> state
-        (assoc :pos new-pos)
-        (update :count (if (tree? current) inc identity)))))
+(defn make-reducer-fn [increment skip-line?]
+  (fn [state line]
+    (if (skip-line? state)
+      (update state :row inc)
+      (let [current (.charAt line (:pos state))
+            new-pos (mod (+ (:pos state) increment) (count line))]
+        (-> state
+            (assoc :pos new-pos)
+            (update :count (if (tree? current) inc identity))
+            (update :row inc))))))
 
 
 (def initial-state
   {:pos 0
+   :row 0
    :count 0})
 
-(defn solve-part-1 []
-  (with-open [rdr (io/reader url)]
-    (reduce reducer-fn initial-state (line-seq rdr))))
 
+(defn solver
+  ([step]
+   (solver step (constantly false)))
+  ([step skip-line-fn]
+   (:count
+    (with-open [rdr (io/reader url)]
+      (reduce (make-reducer-fn step skip-line-fn)
+              initial-state
+              (line-seq rdr))))))
+
+(defn solve-part-1 []
+  (solver 3))
+
+(defn solve-part-2 []
+  (* (solver 1)
+     (solver 3)
+     (solver 5)
+     (solver 7)
+     (solver 1 (fn [{:keys [row]}] (odd? row)))))
 
 (comment
   (solve-part-1)
+  (solve-part-2)  ;; => 3584591857
   )
