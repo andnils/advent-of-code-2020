@@ -17,11 +17,11 @@
       ;; if skip, just increment the row-counter
       (update state :row inc)
       ;; else: check if tree and then increment tree-count
-      (let [current (.charAt line (:pos state))
+      (let [at-tree? (tree? (.charAt line (:pos state)))
             new-pos (mod (+ (:pos state) increment) (count line))]
         (-> state
             (assoc :pos new-pos)
-            (update :count (if (tree? current) inc identity))
+            (update :count (if at-tree? inc identity))
             (update :row inc))))))
 
 
